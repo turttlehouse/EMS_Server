@@ -933,6 +933,13 @@ touch@^3.1.0:
   resolved "https://registry.yarnpkg.com/touch/-/touch-3.1.1.tgz#097a23d7b161476435e5c1344a95c0f75b4a5694"
   integrity sha512-r0eojU4bI8MnHr8c5bNo7lJDdI2qXlWWJk6a9EAFG7vbhTjElYhBVS3/miuE0uOuoLdb8Mc/rVfsmm6eo5o9GA==
 
+tsc-node@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/tsc-node/-/tsc-node-0.0.3.tgz#3e2619907636644b4fc6a3c2d66026f9f665a9da"
+  integrity sha512-cCfkuHFGRUS5afZhabC9a8KEY1KD2X85KmXUu20HUUFXzJMHGfUvc6t++sy9p02dAscZsNfxKcUVbFLhTltTcA==
+  dependencies:
+    typescript "^2.1.5"
+
 type-is@^2.0.0, type-is@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/type-is/-/type-is-2.0.1.tgz#64f6cf03f92fce4015c2b224793f6bdd4b068c97"
@@ -941,6 +948,11 @@ type-is@^2.0.0, type-is@^2.0.1:
     content-type "^1.0.5"
     media-typer "^1.1.0"
     mime-types "^3.0.0"
+
+typescript@^2.1.5:
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
+  integrity sha512-Gr4p6nFNaoufRIY4NMdpQRNmgxVIGMs4Fcu/ujdYk3nAZqk7supzBE9idmvfZIlH/Cuj//dvi+019qEue9lV0w==
 
 typescript@^5.9.2:
   version "5.9.2"
