@@ -7,13 +7,13 @@ const dbPass = process.env.DB_PASSWORD;
 const dbHost = process.env.DB_HOST;
 const dbPort = process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306;
 // Check if all required environment variables are set
-console.log("Database Configuration:", {
-    dbName,
-    dbUser,
-    dbPass,
-    dbHost,
-    dbPort
-});
+// console.log("Database Configuration:", {
+//     dbName,
+//     dbUser,
+//     dbPass,
+//     dbHost,
+//     dbPort
+// });
 if (!dbName || !dbUser || !dbPass || !dbHost) {
     throw new Error("Database configuration environment variables are missing.");
 }
