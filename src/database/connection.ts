@@ -27,7 +27,7 @@ const sequelize = new Sequelize({
     host: dbHost,
     port: dbPort,
     dialect: "mysql",
-    models: [__dirname + "/models"]
+    models: [__dirname + "/models"] //path to models  folder.(__dirname : current directory name) so current directory bata models folder ko path 
 });
 
 
