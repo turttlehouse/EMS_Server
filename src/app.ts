@@ -8,17 +8,20 @@ import adminSeeder from './adminSeeder';
 // importing Routes
 import authRoute from './routes/authRoute/authRoute';
 import userRoute from './routes/userRoute/userRoute';
+import testRoute from './routes/testRoute/testRoute';
 
 const app: Application = express();
 const PORT: number = Number(process.env.PORT) || 5000;
 
+//middleware to parse JSON request bodies
 app.use(express.json());
 
 adminSeeder();
 
-// mounting user routes
+// mounting API routes
 app.use('/api/auth',authRoute)
 app.use('/api',userRoute)
+app.use('/api',testRoute)
 
 app.get('/', (req: Request, res: Response) => {
     res.send('server connected successfully!');

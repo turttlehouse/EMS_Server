@@ -9,7 +9,7 @@ class AuthController{
 
     //register user method
     public static async registerUser(req:AuthRequest,res:Response):Promise<void>{
-        const {username,email,passwordHash,role} = req.body;
+        const {username,email,passwordHash,role ='student'} = req.body;
 
         if(!username || !email || !passwordHash || !role){
             res.status(400).json({
@@ -22,6 +22,7 @@ class AuthController{
             res.status(400).json({
                 message : 'invalid role'
             })
+            return
         }
 
         const [user] = await User.findAll({
