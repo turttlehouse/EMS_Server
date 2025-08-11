@@ -13,6 +13,9 @@ router.route('/create-test')
 router.route('/tests')
 .get(authMiddleware.isAuthenticated,errorHandler(TestController.getAllTests))
 
+router.route('/tests/:id/start')
+.post(authMiddleware.isAuthenticated,authMiddleware.restrictTo(Role.Student),errorHandler(TestController.startTest))
+
 
 export default router;
 

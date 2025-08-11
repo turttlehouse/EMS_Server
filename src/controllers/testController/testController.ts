@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth/authTypes";
 import Test from "../../database/models/testModel";
+import Submission from "../../database/models/submissionModel";
 
 
 class TestController{
@@ -77,6 +78,112 @@ class TestController{
 
     }
 
+    // start test method
+    public static async startTest(req:AuthRequest,res:Response):Promise<void>{
+        const {id} = req.params;
+
+        if(!req.user){
+            res.status(401).json({
+                message: 'User not authenticated'
+            })
+            return
+        }
+
+        // only students can start tests
+        if(req.user.role !== 'student'){
+            res.status(403).json({
+                message : 'only students can start tests'
+            })
+            return
+        }
+
+        // check if text exists and is Published
+        const test = await Test.findByPk(id);
+        
+        if(!test){
+            res.status(404).json({
+                message : 'test not found'
+            })
+            return;
+        }
+
+        if(!test?.isPublished){
+            res.status(400).json({
+                message : 'test is not published'
+            })
+            return;
+        }
+
+        // check if student has already started this test
+        const existingSubmission = await Submission.findOne({
+            where:{
+                testId:id,
+                studentId : req.user.id
+            }
+        })
+
+        if(existingSubmission){
+            //calculate remaining time if test was already started
+            const startTime = new Date(existingSubmission.startedAt);
+            const currentTime = new Date();
+            const elapsedMinutes = Math.floor((currentTime.getTime() - startTime.getTime()) / (1000 * 60));
+            const remainingMinutes = Math.max(0,test.durationInMinutes - elapsedMinutes);
+
+
+            if(remainingMinutes <=0 && !existingSubmission.submittedAt ){
+                // If time is up, submit the test automatically
+                await Submission.update({
+                    submittedAt: new Date(),
+                }, {
+                    where: {
+                        id: existingSubmission.id
+                    }
+                })
+            }
+
+            res.status(200).json({
+                message : 'test already started',
+                data:{
+                    submissionId: existingSubmission.id,
+                    testId : test.id,
+                    title : test.title,
+                    description : test.description,
+                    totalDurationInMinutes : test.durationInMinutes,
+                    remainingMinutes: remainingMinutes,
+                    startedAt : existingSubmission.startedAt,
+                    endTime : new Date(startTime.getTime() + (test.durationInMinutes * 60 * 1000))
+                }
+            });
+            return;
+        
+        }
+
+        // create new Submission record
+        const startTime = new Date();
+        const endTime = new Date(startTime.getTime() + (test.durationInMinutes * 60 * 1000)) //js work with miliseconds
+
+        const submission = await Submission.create({
+            testId:id,
+            studentId:req.user.id,
+            startedAt : startTime,
+            submittedAt : null // only set when test is submitted
+        })
+
+        res.status(201).json({
+            message : 'test started successfully',
+            data : {
+                submissionId : submission.id,
+                testId:test.id,
+                title : test.title,
+                description : test.description,
+                totalDurationInMinutes: test.durationInMinutes,
+                remainingMinutes : test.durationInMinutes,
+                startedAt : submission.startedAt,
+                endTime : endTime
+            }
+        });
+
+    }
 
 }
 
