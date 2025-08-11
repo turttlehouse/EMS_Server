@@ -5,11 +5,20 @@ dotenv.config();
 import './database/connection';
 import adminSeeder from './adminSeeder';
 
-
-adminSeeder();
+// importing Routes
+import authRoute from './routes/authRoute/authRoute';
+import userRoute from './routes/userRoute/userRoute';
 
 const app: Application = express();
 const PORT: number = Number(process.env.PORT) || 5000;
+
+app.use(express.json());
+
+adminSeeder();
+
+// mounting user routes
+app.use('/api/auth',authRoute)
+app.use('/api',userRoute)
 
 app.get('/', (req: Request, res: Response) => {
     res.send('server connected successfully!');
