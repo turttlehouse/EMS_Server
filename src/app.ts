@@ -9,6 +9,7 @@ import adminSeeder from './adminSeeder';
 import authRoute from './routes/authRoute/authRoute';
 import userRoute from './routes/userRoute/userRoute';
 import testRoute from './routes/testRoute/testRoute';
+import questionRoute from './routes/questionRoute/questionRoute';
 
 const app: Application = express();
 const PORT: number = Number(process.env.PORT) || 5000;
@@ -22,6 +23,7 @@ adminSeeder();
 app.use('/api/auth',authRoute)
 app.use('/api',userRoute)
 app.use('/api',testRoute)
+app.use('/api',questionRoute)
 
 app.get('/', (req: Request, res: Response) => {
     res.send('server connected successfully!');

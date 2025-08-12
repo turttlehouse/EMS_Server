@@ -51,10 +51,11 @@ class Submission extends Model {
   declare score?: number;
 
   @Column({
-    type: DataType.BOOLEAN,
+    type : DataType.BOOLEAN,
     defaultValue: false,
   })
-  declare isGraded: boolean;
+  declare isScoreReleased: boolean;
+
 }
 
 export default Submission;

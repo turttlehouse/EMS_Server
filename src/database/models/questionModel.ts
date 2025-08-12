@@ -27,7 +27,7 @@ class Question extends Model {
 
   @Column({
     type:DataType.UUID,
-    allowNull:false
+    allowNull:true
   })
   declare correctOptionId: string;
 
