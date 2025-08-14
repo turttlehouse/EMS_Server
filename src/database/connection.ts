@@ -1,4 +1,5 @@
 import { Sequelize } from "sequelize-typescript";
+import { initAssociations } from "./initAssociations";
 
 const dbName = process.env.DB_NAME;
 const dbUser = process.env.DB_USERNAME;
@@ -16,42 +17,42 @@ const dbPort = process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306;
 // });
 
 if (!dbName || !dbUser || !dbPass || !dbHost) {
-    throw new Error("Database configuration environment variables are missing.");
+  throw new Error("Database configuration environment variables are missing.");
 }
 
 // sequelize instance
 const sequelize = new Sequelize({
-    database: dbName,
-    username: dbUser,
-    password: dbPass,
-    host: dbHost,
-    port: dbPort,
-    dialect: "mysql",
-    models: [__dirname + "/models"] //path to models  folder.(__dirname : current directory name) so current directory bata models folder ko path 
+  database: dbName,
+  username: dbUser,
+  password: dbPass,
+  host: dbHost,
+  port: dbPort,
+  dialect: "mysql",
+  models: [__dirname + "/models"], //path to models  folder.(__dirname : current directory name) so current directory bata models folder ko path
 });
 
+// Initialize associations after models are loaded
+initAssociations();
 
 //Configuration check
 sequelize
-.authenticate()
-.then(()=>{
-    console.log('Database connected successfully')
-})
-.catch((err)=>{
-    console.log('Error connecting to database : ',err)
-})
-
-
+  .authenticate()
+  .then(() => {
+    console.log("Database connected successfully");
+  })
+  .catch((err) => {
+    console.log("Error connecting to database : ", err);
+  });
 
 //migration
-sequelize.sync({force : false})
-.then(()=>{
-    console.log('Migration completed : Database synchronized successfully')
-})
-.catch((err)=>{
-    console.log('Migration Error : ',err)
-})
-
+sequelize
+  .sync({ force: false })
+  .then(() => {
+    console.log("Migration completed : Database synchronized successfully");
+  })
+  .catch((err) => {
+    console.log("Migration Error : ", err);
+  });
 
 //exporting the sequelize instance
-export default sequelize
+export default sequelize;

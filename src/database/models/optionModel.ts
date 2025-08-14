@@ -16,6 +16,12 @@ class Option extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    references: {
+      model: 'questions',
+      key: 'id'
+    },
+    onDelete: 'RESTRICT',
+    onUpdate: 'CASCADE'
   })
   declare questionId: string;
 

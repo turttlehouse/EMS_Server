@@ -56,16 +56,22 @@ class QuestionController{
 
             // find correct option's id
             const correctOption = createdOptions.find((opt)=> opt.isCorrect);
-
-            // update question with correctOptionId
-            if(correctOption){
-                question.correctOptionId = correctOption.id;
-                await question.save({transaction});
-            }else{
-                // if no correct option marked rollback
+            
+            //Exactly Only one Correct option must exist
+            if(!correctOption){
+                // if no correct option marked then rollback
                 await transaction.rollback();
                 res.status(400).json({
                     message: 'each question must have one correct option'
+                });
+                return;
+            }
+            // only one correct option must exist
+            const correctOptionsCount = createdOptions.filter(opt => opt.isCorrect).length;
+            if(correctOptionsCount > 1){
+                await transaction.rollback();
+                res.status(400).json({
+                    message: 'each question must have exactly one correct option'
                 });
                 return;
             }

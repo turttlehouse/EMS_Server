@@ -16,6 +16,12 @@ class Question extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    references: {
+      model: 'tests',
+      key: 'id'
+    },
+    onDelete: 'RESTRICT',
+    onUpdate: 'CASCADE'
   })
   declare testId: string;
 
@@ -24,12 +30,6 @@ class Question extends Model {
     allowNull: false,
   })
   declare questionText: string;
-
-  @Column({
-    type:DataType.UUID,
-    allowNull:true
-  })
-  declare correctOptionId: string;
 
   @Column({
     type: DataType.INTEGER,

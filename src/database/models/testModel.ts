@@ -23,6 +23,12 @@ class Test extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onDelete: 'RESTRICT',
+    onUpdate: 'CASCADE'
   })
   declare createdBy: string;
 
