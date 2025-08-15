@@ -4,7 +4,10 @@ import Submission from "../../database/models/submissionModel";
 import StudentAnswer from "../../database/models/studentAnswerModel";
 import Option from "../../database/models/optionModel";
 import Question from "../../database/models/questionModel";
-import { Op } from "sequelize";
+
+interface QuestionWithOptions extends Question {
+    options?: Option[];
+}
 
 
 class SubmissionController{
@@ -77,16 +80,15 @@ class SubmissionController{
         // fetch all questions with their marks and correct options
         const questionsIds = answers.map((a:any)=>a.questionId);
 
-        // 
+        // making available all questions with their options
         const questions = await Question.findAll({
             where : { id : questionsIds},
             include:[
                 {
                     model : Option,
-                    where : { id : {[Op.in] : answers.map((a:any)=>a.selectedOptionId)} }
                 }
             ]
-        })
+        }) as QuestionWithOptions[];
 
         // calculate score based on question marks
         let totalScore = 0;
@@ -94,9 +96,10 @@ class SubmissionController{
             const question = questions.find(q => q.id === answer.questionId);
             if(!question) continue;
 
-            // check if selected option is the correct one for this question
-            const isCorrect = question.correctOptionId === answer.selectedOptionId;
-            if(isCorrect){
+            // find the correct option for this question
+            const correctOption = question.options?.find((opt: Option) => opt.isCorrect);;
+            if(!correctOption) continue; // skip if no correct option found
+            if(correctOption.id === answer.selectedOptionId){
                 totalScore += question.marks;
             }
         }

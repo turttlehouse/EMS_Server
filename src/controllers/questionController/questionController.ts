@@ -49,6 +49,7 @@ class QuestionController{
                         questionId : question.id,
                         optionLabel : opt.optionLabel,
                         optionText : opt.optionText,
+                        // always stored as a proper boolean value in the database, regardless of what type of value is passed in the request
                         isCorrect : !!opt.isCorrect,
                     },{transaction})
                 ))
