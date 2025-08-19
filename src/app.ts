@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import './database/connection';
 import adminSeeder from './adminSeeder';
+import cors from 'cors';
 
 // importing Routes
 import authRoute from './routes/authRoute/authRoute';
@@ -14,10 +15,16 @@ import questionRoute from './routes/questionRoute/questionRoute';
 const app: Application = express();
 const PORT: number = Number(process.env.PORT) || 5000;
 
+// CORS middleware
+app.use(cors({
+    origin: '*',
+    methods: ['GET','POST','PATCH','PUT','DELETE']
+}))
+
 //middleware to parse JSON request bodies
 app.use(express.json());
 
-adminSeeder();
+adminSeeder();      
 
 // mounting API routes
 app.use('/api/auth',authRoute)
