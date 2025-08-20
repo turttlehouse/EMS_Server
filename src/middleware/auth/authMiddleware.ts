@@ -7,15 +7,32 @@ import { AuthRequest, Role } from "./authTypes";
 class AuthMiddleware{
 
     async isAuthenticated(req:AuthRequest,res:Response,next:NextFunction):Promise<void>{
-        const token = req.headers.authorization;
+        // const token = req.headers.authorization;
 
-        if(!token || token== null || token=== undefined){
+        // if(!token || token== null || token=== undefined){
+        //     res.status(403).json({
+        //         message:'token not provided'
+        //     })
+
+        //     return
+        // }
+        const authHeader = req.headers.authorization;
+
+        if(!authHeader || authHeader === null || authHeader === undefined){
             res.status(403).json({
                 message:'token not provided'
             })
-
             return
         }
+        
+        // Extract token from "Bearer <token>" format
+        let token;
+        if(authHeader.startsWith('Bearer ')){
+            token = authHeader.substring(7); // Remove "Bearer " prefix
+        } else {
+            token = authHeader; // Fallback for direct token
+        }
+
 
         const secretKey = process.env.JWT_SECRET;
 
