@@ -2,6 +2,8 @@ import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth/authTypes";
 import Test from "../../database/models/testModel";
 import Submission from "../../database/models/submissionModel";
+import Question from "../../database/models/questionModel";
+import Option from "../../database/models/optionModel";
 
 
 class TestController{
@@ -182,6 +184,99 @@ class TestController{
                 endTime : endTime
             }
         });
+
+    }
+
+    // Get Test questions
+    public static async getTestQuestions(req:AuthRequest,res:Response):Promise<void>{
+        const { id } = req.params;
+
+        if(!req.user){
+            res.status(401).json({
+                message: 'User not authenticated'
+            })
+            return
+        }
+        // only student can get test questions
+        if(req.user.role !== 'student'){
+            res.status(403).json({
+                message : 'only students can get test questions'
+            })
+            return
+        }
+        const test = await Test.findByPk(id);
+        if(!test){
+            res.status(404).json({
+                message : 'test not found'
+            })
+            return;
+        }
+        if(!test?.isPublished){
+            res.status(400).json({
+                message : 'test is not published'
+            })
+            return;
+        }
+        // check if student has already started this test
+        const submission = await Submission.findOne({
+            where :{
+                testId : id,
+                studentId : req.user.id
+            }
+        })
+
+        if(!submission){
+            res.status(404).json({
+                message : 'test not started yet'
+            })
+            return;
+        }
+
+        // check if time hasn't expired
+        const startTime = new Date(submission.startedAt);
+        const currentTime = new Date();
+        const elapsedMinutes = Math.floor((currentTime.getTime() - startTime.getTime()) / (1000 * 60));
+        const remainingMinutes = Math.max(0, test.durationInMinutes - elapsedMinutes);
+
+        if(remainingMinutes <= 0 && !submission.submittedAt){
+            // Auto-submit if time is up
+            await Submission.update({
+                submittedAt: new Date()
+            }, {
+                where: {
+                    id: submission.id
+                }
+            });
+
+            res.status(400).json({
+                message : 'Test time has expired'
+            })
+
+            return;
+
+        }
+
+        // Get qusetions with their options
+        const questions = await Question.findAll({
+            where :{testId:id},
+            include : [{
+                model : Option,
+                as : 'options',
+                attributes:['id','optionText']
+            }],
+            attributes:['id','questionText'],
+            order:[['createdAt','ASC']]
+        })
+
+        res.status(200).json({
+            message : 'Test questions retrieved successfully',
+            data : questions,
+            meta:{
+                submissionId:submission.id,
+                remainingMinutes:remainingMinutes,
+                totalQuestions : questions.length,
+            }
+        })
 
     }
 

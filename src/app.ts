@@ -28,8 +28,8 @@ adminSeeder();
 
 // mounting API routes
 app.use('/api/auth',authRoute)
-app.use('/api',userRoute)
-app.use('/api',testRoute)
+app.use('/api/users',userRoute)
+app.use('/api/tests',testRoute)
 app.use('/api',questionRoute)
 
 app.get('/', (req: Request, res: Response) => {
