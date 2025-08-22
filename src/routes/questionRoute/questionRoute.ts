@@ -7,7 +7,7 @@ import errorHandler from "../../services/errorHandler";
 
 const router : Router = express.Router();
 
-router.route('/questions')
+router.route('/create-questions')
 .post(authMiddleware.isAuthenticated, authMiddleware.restrictTo(Role.Admin,Role.Teacher), errorHandler(QuestionController.createQuestions));
 
 export default router;

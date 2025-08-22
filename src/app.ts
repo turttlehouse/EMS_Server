@@ -11,6 +11,7 @@ import authRoute from './routes/authRoute/authRoute';
 import userRoute from './routes/userRoute/userRoute';
 import testRoute from './routes/testRoute/testRoute';
 import questionRoute from './routes/questionRoute/questionRoute';
+import submissionRoute from './routes/submissionRoute/submissionRoute';
 
 const app: Application = express();
 const PORT: number = Number(process.env.PORT) || 5000;
@@ -30,7 +31,8 @@ adminSeeder();
 app.use('/api/auth',authRoute)
 app.use('/api/users',userRoute)
 app.use('/api/tests',testRoute)
-app.use('/api',questionRoute)
+app.use('/api/questions',questionRoute)
+app.use('/api/submissions',submissionRoute)
 
 app.get('/', (req: Request, res: Response) => {
     res.send('server connected successfully!');

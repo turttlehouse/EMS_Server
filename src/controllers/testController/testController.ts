@@ -54,19 +54,31 @@ class TestController{
     // get all tests method with filter
     public static async getAllTests(req:AuthRequest,res:Response):Promise<void>{
         const { isPublished,page=1,limit=10} = req.query;
-        
-        // sequelize automatically handles undefined values
-        const {count,rows} = await Test.findAndCountAll({
-            where:{
-                // Only add isPublished if it's provided
-                ...(isPublished !== undefined && { isPublished: isPublished === 'true' }),
-                // For students: force published only
-                ...(req.user?.role === 'student' && { isPublished: true })
-            },
-            limit : parseInt(limit as string),
-            offset : (parseInt(page as string) - 1) * parseInt(limit as string),
-            order: [['createdAt', 'DESC']]
-        })
+
+        const pageNum = parseInt(page as string, 10);
+        const limitNum = parseInt(limit as string, 10);
+
+        let where: any = {};
+
+         if (req.user?.role === "student") {
+            // Students only see published tests
+            where.isPublished = true;
+        } else {
+            // Teacher/Admin
+            // isPublished comes from the query string, e.g., "true" or "false".
+            // isPublished === "true" converts it to boolean (true/false) for Sequelize.
+            // If the query param is not provided, no filter is applied → returns all tests.
+            if (isPublished !== undefined) {
+                where.isPublished = isPublished === "true";
+            }
+        }
+
+        const { count, rows } = await Test.findAndCountAll({
+        where,
+        limit: limitNum,
+        offset: (pageNum - 1) * limitNum,
+        order: [["createdAt", "DESC"]],
+        });
 
         res.status(200).json({
             message : 'tests fetched successfully',
@@ -74,7 +86,7 @@ class TestController{
             meta: {
                 total: count,
                 page,
-                totalPages: Math.ceil(count / parseInt(limit as string)),
+                totalPages: Math.ceil(count / limitNum),
             },
         })
 
@@ -262,7 +274,7 @@ class TestController{
             include : [{
                 model : Option,
                 as : 'options',
-                attributes:['id','optionText']
+                attributes:['id','optionText','optionLabel']
             }],
             attributes:['id','questionText'],
             order:[['createdAt','ASC']]

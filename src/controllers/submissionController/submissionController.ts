@@ -4,6 +4,8 @@ import Submission from "../../database/models/submissionModel";
 import StudentAnswer from "../../database/models/studentAnswerModel";
 import Option from "../../database/models/optionModel";
 import Question from "../../database/models/questionModel";
+import { Op } from "sequelize";
+import User from "../../database/models/userModel";
 
 interface QuestionWithOptions extends Question {
     options?: Option[];
@@ -11,6 +13,8 @@ interface QuestionWithOptions extends Question {
 
 
 class SubmissionController{
+
+    // submit test method
     public static async submitTest(req:AuthRequest,res:Response,next:NextFunction):Promise<void>{
         const { submissionId,answers } = req.body;
 
@@ -116,12 +120,12 @@ class SubmissionController{
 
         res.status(200).json({
             message : 'test submitted successfully',
-            data :{
-                submissionId: submission.id,
-                score: totalScore,
-                submittedAt: now,
-                endedAt: now
-            }
+            // data :{
+            //     submissionId: submission.id,
+            //     score: totalScore,
+            //     submittedAt: now,
+            //     endedAt: now
+            // }
         })
 
 
@@ -129,6 +133,160 @@ class SubmissionController{
 
 
     }
+
+    // Get all submission for a test(for teachers)
+    public static async getAllTestSubmissions(req:AuthRequest,res:Response,next:NextFunction):Promise<void>{
+        const { testId }= req.params;
+        const {page=1,limit =10} = req.query;
+
+
+        if(!req.user){
+            res.status(401).json({
+                message: 'User not authenticated'
+            });
+            return;
+        }
+
+        if(!['teacher','admin'].includes(req.user.role)){
+            res.status(403).json({
+                message: 'Only teachers and admins can view submissions'
+            });
+            return;
+        }
+
+        // Fetch submissions for the test
+        const { count, rows } = await Submission.findAndCountAll({
+            where: {
+                testId,
+            },
+            limit: parseInt(limit as string),
+            offset: (parseInt(page as string) - 1) * parseInt(limit as string),
+            order: [['createdAt', 'DESC']],
+            attributes:['id','score','submittedAt','startedAt','isScoreReleased','studentId'],
+            include:[
+                {
+                    model:User,
+                    as : 'student',
+                    attributes:['id','username','email']
+                }
+            ]
+        });
+
+        res.status(200).json({
+            message: 'Submissions fetched successfully',
+            data: rows,
+            meta: {
+                total: count,
+                page,
+                totalPages: Math.ceil(count / parseInt(limit as string)),
+                releasedCount : rows.filter(sub => sub.isScoreReleased).length,
+                pendingCount : rows.filter(sub => !sub.isScoreReleased).length
+            },
+        });
+    }
+
+    // Release score both bulk and selective score release
+    public static async releaseScores(req:AuthRequest,res:Response,next:NextFunction):Promise<void>{
+        const { testId, submissionIds } = req.body;
+
+        if(!req.user){
+            res.status(401).json({
+                message: 'User not authenticated'
+            });
+            return;
+        }
+
+        if (!['teacher', 'admin'].includes(req.user.role)) {
+            res.status(403).json({
+                message: 'Only teachers and admins can release scores'
+            });
+            return;
+        }
+
+        if (!testId && (!submissionIds || !Array.isArray(submissionIds) || submissionIds.length === 0)) {
+            res.status(400).json({
+                message: 'Either testId (for bulk release) or submissionIds (for selective release) is required'
+            });
+            return;
+        }
+
+        // Op stands for Operators
+        // [Op.ne] → means "not equal".
+        // So this condition ensures we only update submissions that have actually been submitted, i.e., submittedAt != null.
+
+        let whereCondition: any = {
+            submittedAt: { [Op.ne]: null }, // only submitted ones
+        };
+
+        if (testId) {
+          whereCondition.testId = testId;
+        }
+
+         if (submissionIds && submissionIds.length > 0) {
+           whereCondition.id = { [Op.in]: submissionIds };
+        }
+
+        const [updatedCount] = await Submission.update(
+            { isScoreReleased: true },
+            { where: whereCondition }
+        );
+
+        if (updatedCount === 0) {
+            res.status(404).json({ 
+                message: "No matching submissions found" 
+            });
+            return;
+        }
+
+        res.status(200).json({
+            message: `Scores released for ${updatedCount} submission(s)`,
+        });
+    }
+
+
+    // Get Student's own test result
+    public static async getStudentOwnResults(req:AuthRequest,res:Response,next:NextFunction):Promise<void>{
+        const {page=1,limit = 10} = req.query;
+        if(!req.user){
+            res.status(401).json({
+                message : 'user not authenticated'
+            })
+            return;
+        }
+
+        if (req.user.role !== 'student') {
+            res.status(403).json({
+                message: 'Only students can view their results'
+            });
+            return;
+        }
+
+        const { count,rows} = await Submission.findAndCountAll({
+            where: {
+                studentId: req.user.id,
+                isScoreReleased: true // only fetch released scores
+            },
+            limit: parseInt(limit as string),
+            offset: (parseInt(page as string) - 1) * parseInt(limit as string),
+            order: [['createdAt', 'DESC']],
+            attributes:['id','score','submittedAt','startedAt','isScoreReleased','testId']
+        })
+
+        res.status(200).json({
+            message : 'Student results fetched successfully',
+            data: rows,
+            meta: {
+                total: count,
+                page,
+                totalPages: Math.ceil(count / parseInt(limit as string))
+            }
+        })
+
+
+
+    }
+
+    
 
 }   
 
