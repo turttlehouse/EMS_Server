@@ -275,6 +275,11 @@ class SubmissionController{
         res.status(200).json({
             message : 'Student results fetched successfully',
             data: rows,
+            studentInfo: {
+                id: req.user.id,
+                username: req.user.username,
+                role: req.user.role
+            },
             meta: {
                 total: count,
                 page,

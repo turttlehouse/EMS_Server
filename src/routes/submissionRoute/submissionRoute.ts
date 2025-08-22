@@ -8,18 +8,18 @@ import SubmissionController from "../../controllers/submissionController/submiss
 const router : Router = express.Router();
 
 router.route('/')
-.get(authMiddleware.isAuthenticated, authMiddleware.restrictTo(Role.Admin,Role.Teacher), errorHandler(SubmissionController.getAllTestSubmissions));
+.get(authMiddleware.isAuthenticated, authMiddleware.authorizeTo(Role.Admin,Role.Teacher), errorHandler(SubmissionController.getAllTestSubmissions));
 
 router.route('/submit-test')
-.post(authMiddleware.isAuthenticated, authMiddleware.restrictTo(Role.Student), errorHandler(SubmissionController.submitTest));
+.post(authMiddleware.isAuthenticated, authMiddleware.authorizeTo(Role.Student), errorHandler(SubmissionController.submitTest));
 
 router.route('/my-results')
-.get(authMiddleware.isAuthenticated, authMiddleware.restrictTo(Role.Student), errorHandler(SubmissionController.getStudentOwnResults));
+.get(authMiddleware.isAuthenticated, authMiddleware.authorizeTo(Role.Student), errorHandler(SubmissionController.getStudentOwnResults));
 
 router.route('/release-scores')
-.get(authMiddleware.isAuthenticated, authMiddleware.restrictTo(Role.Admin,Role.Teacher), errorHandler(SubmissionController.releaseScores));
+.get(authMiddleware.isAuthenticated, authMiddleware.authorizeTo(Role.Admin,Role.Teacher), errorHandler(SubmissionController.releaseScores));
 
 router.route('/view-test-submissions/:testId')
-.get(authMiddleware.isAuthenticated, authMiddleware.restrictTo(Role.Admin,Role.Teacher), errorHandler(SubmissionController.getAllTestSubmissions));
+.get(authMiddleware.isAuthenticated, authMiddleware.authorizeTo(Role.Admin,Role.Teacher), errorHandler(SubmissionController.getAllTestSubmissions));
 
 export default router;

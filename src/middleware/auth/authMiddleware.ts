@@ -53,13 +53,20 @@ class AuthMiddleware{
             else{
                 try {
                     const userData = await User.findByPk(decoded.id)
+                    console.log(userData)
                     if(!userData){
                         res.status(404).json({
                             message : 'user not found with this token'
                         })
                         return
                     }
-                    req.user = userData
+                    // req.user = userData
+                    req.user = {
+                        id: userData.id,
+                        username: userData.username,
+                        email: userData.email,
+                        role: userData.role
+                    }
                     next()
                     
                 } catch (error) {
@@ -75,7 +82,7 @@ class AuthMiddleware{
 
     }
 
-    restrictTo(...roles:Role[]){
+    authorizeTo(...roles:Role[]){
         return(req:AuthRequest,res:Response,next:NextFunction)=>{
             
             let userRole = req.user?.role as Role;
